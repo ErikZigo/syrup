@@ -6,7 +6,9 @@
 
 namespace Keboola\Syrup\Tests\Service;
 
+use Keboola\Syrup\Encryption\Encryptor;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Test\MockCryptoWrapper;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -411,5 +413,27 @@ class ObjectEncryptorTest extends WebTestCase
         $this->assertEquals("value1", $decrypted["key1"]);
         $this->assertEquals("value2", $decrypted["key2"][0]["nestedKey1"]);
         $this->assertEquals("value3", $decrypted["key2"][1]["nestedKey2"]["#finalKey"]);
+    }
+
+    public function testDecryptorLegacyCipher()
+    {
+        $client = static::createClient();
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $client->getContainer()->get('syrup.object_encryptor');
+
+        /** @var Encryptor $legacyEncryptor */
+        $legacyEncryptor = $client->getContainer()->get('syrup.encryptor');
+        $token = '123-45678-901234567892eb1c665eb847be8a084ab3a32367';
+        $encrypted = $legacyEncryptor->encrypt($token);
+
+        $this->assertEquals(108, strlen($encrypted));
+        $this->assertEquals($token, $encryptor->decrypt($encrypted));
+
+        $notEncrypted = str_repeat('a', 108);
+        try {
+            $this->assertEquals($token, $encryptor->decrypt($notEncrypted));
+            $this->fail("Decrypting non-encrypted string should fail.");
+        } catch (UserException $e) {
+        }
     }
 }

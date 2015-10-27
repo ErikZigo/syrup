@@ -9,14 +9,13 @@
 namespace Keboola\Syrup\Command;
 
 use Doctrine\DBAL\Connection;
-use Keboola\Encryption\EncryptorInterface;
 use Keboola\Syrup\Exception\MaintenanceException;
 use Keboola\Syrup\Job\ExecutorFactory;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Keboola\Syrup\Exception\JobException;
 use Keboola\Syrup\Exception\SyrupExceptionInterface;
@@ -74,8 +73,8 @@ class JobCommand extends ContainerAwareCommand
         }
 
         // SAPI init
-        /** @var EncryptorInterface $encryptor */
-        $encryptor = $this->getContainer()->get('syrup.encryptor');
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $this->getContainer()->get('syrup.object_encryptor');
 
         $this->sapiClient = new SapiClient([
             'token' => $encryptor->decrypt($this->job->getToken()['token']),

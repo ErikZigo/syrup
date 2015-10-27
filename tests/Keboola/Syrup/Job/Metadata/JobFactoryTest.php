@@ -56,6 +56,6 @@ class JobFactoryTest extends KernelTestCase
         $this->assertArrayHasKey('description', $job->getToken());
         $this->assertEquals($tokenData['description'], $job->getToken()['description']);
         $this->assertArrayHasKey('token', $job->getToken());
-        $this->assertEquals($tokenData['token'], $encryptor->decrypt($job->getToken()['token']));
+        $this->assertEquals($tokenData['token'], $configEncryptor->decrypt($job->getToken()['token']));
     }
 }

@@ -9,6 +9,7 @@ namespace Keboola\Syrup\Service;
 
 use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Encryption\CryptoWrapperInterface;
+use Keboola\Syrup\Encryption\Encryptor;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -109,6 +110,18 @@ class ObjectEncryptor
     {
         $wrapper = $this->findWrapper($value);
         if (!$wrapper) {
+            // handle legacy encrypted tokens
+            if (strlen($value) == 108) {
+                /** @var Encryptor $encryptor */
+                $encryptor = $this->container->get('syrup.encryptor');
+                $decrypted = $encryptor->decrypt($value);
+                if (($decrypted !== false) && preg_match('#[0-9]{3}-[0-9]{5}-[0-9a-z]{40}#', $decrypted)) {
+                    // decryption succeeded
+                    return $decrypted;
+                } else {
+                    throw new UserException("'{$value}' is not an encrypted value.");
+                }
+            }
             throw new UserException("'{$value}' is not an encrypted value.");
         }
         try {
