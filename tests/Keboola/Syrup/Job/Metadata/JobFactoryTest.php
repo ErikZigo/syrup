@@ -30,8 +30,8 @@ class JobFactoryTest extends KernelTestCase
             'userAgent' => SYRUP_APP_NAME,
         ]);
 
-        $key = md5(uniqid());
-        $encryptor = new Encryptor($key);
+        /** @var Encryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.encryptor');
         /** @var ObjectEncryptor $configEncryptor */
         $configEncryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
         $jobFactory = new JobFactory(SYRUP_APP_NAME, $encryptor, $configEncryptor);
